@@ -79,16 +79,4 @@ $tab-faded: #f7f7f7;
       display: none;
     }
   }
-
-  //overrides for the SimpleMDE library
-  .simplemde-wrapper {
-    .editor-statusbar {
-      display: none;
-    }
-    .editor-toolbar {
-      &:before, &:after {
-        margin: 0;
-      }
-    }
-  }
 }

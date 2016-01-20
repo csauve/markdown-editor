@@ -1,0 +1,14 @@
+.richtext-editor {
+
+  //overrides for the SimpleMDE library
+  .simplemde-wrapper {
+    .editor-statusbar {
+      display: none;
+    }
+    .editor-toolbar {
+      &:before, &:after {
+        margin: 0;
+      }
+    }
+  }
+}

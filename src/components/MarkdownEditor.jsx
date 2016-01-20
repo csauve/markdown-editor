@@ -1,15 +1,8 @@
 var React = require("react");
-var SimpleMDE = require("simplemde");
 var _ = require("underscore");
 
-var mdeConfig = {
-  autofocus: false,
-  toolbar: ["bold", "italic", "heading-2", "heading-3", "unordered-list", "ordered-list", "preview"],
-  toolbarTips: false,
-  spellChecker: false
-};
 
-var availableRegions = [
+var availableDomains = [
   {propertyPath: "enUS", message: "English (US)"},
   {propertyPath: "enUK", message: "English (UK)"},
   {propertyPath: "it", message: "Italian"},
@@ -25,27 +18,27 @@ var availableRegions = [
 module.exports = React.createClass({
 
   getInitialState: function() {
-    //find out if any of the available regions have a value provided already, so we can make that tab the selected one
+    //find out if any of the available domains have a value provided already, so we can make that tab the selected one
     var data = this.props.valueLink.value || {};
-    var selectedRegion = _.find(availableRegions, (region) => data[region.propertyPath]);
+    var domainToSelect = _.find(availableDomains, (domain) => data[domain.propertyPath]);
 
     return {
-      selectedRegion: selectedRegion ? selectedRegion.propertyPath : null
+      selectedDomain: domainToSelect
     };
   },
 
   componentDidMount: function() {
     var mdeInstances = {};
 
-    //a textarea was rendered for all regions, so initialize SimpleMDE on each
-    for (var region of availableRegions) {
-      var textAreaElement = this.refs["textarea-" + region.propertyPath];
+    //a textarea was rendered for all domains, so initialize SimpleMDE on each
+    for (var domain of availableDomains) {
+      var textAreaElement = this.refs["textarea-" + domain.propertyPath];
       var simplemde = new SimpleMDE(_.defaults({element: textAreaElement}, mdeConfig));
       var createHandler = (propertyPath, simplemde) => (
         () => {this.handleEditorContentChanged(propertyPath, simplemde.value());}
       );
-      simplemde.codemirror.on("change", createHandler(region.propertyPath, simplemde));
-      mdeInstances[region.propertyPath] = simplemde;
+      simplemde.codemirror.on("change", createHandler(domain.propertyPath, simplemde));
+      mdeInstances[domain.propertyPath] = simplemde;
     }
 
     //save references to the instances (need to refresh CodeMirror when they become visible)
@@ -60,26 +53,21 @@ module.exports = React.createClass({
     this.props.valueLink.requestChange(propValue);
   },
 
-  //called whenever the user changes the text in any of the tabs editors
-  handleEditorContentChanged: function(propertyPath, newValue) {
-    this.setPropertyPathValue(propertyPath, newValue);
-  },
-
   handleTabClick: function(propertyPath) {
     this.setState({
-      selectedRegion: propertyPath
+      selectedDomain: propertyPath
     });
   },
 
   handleTabRemove: function(propertyPath) {
     this.setPropertyPathValue(propertyPath, null);
-    if (propertyPath == this.state.selectedRegion) {
+    if (propertyPath == this.state.selectedDomain) {
       //deleting the currently selected tab, so find a new one to go to
       var data = this.props.valueLink.value || {};
-      var nextRegion = _.find(availableRegions, (region) => (
-        data[region.propertyPath] && region.propertyPath != propertyPath
+      var nextDomain = _.find(availableDomains, (domain) => (
+        data[domain.propertyPath] && domain.propertyPath != propertyPath
       ));
-      this.setState({selectedRegion: nextRegion ? nextRegion.propertyPath : null});
+      this.setState({selectedDomain: nextDomain ? nextDomain.propertyPath : null});
     }
   },
 
@@ -88,49 +76,49 @@ module.exports = React.createClass({
     if (propertyPath && propertyPath != "_") {
       this.setPropertyPathValue(propertyPath, "");
       this.state.mdeInstances[propertyPath].value(""); //clear out the editor
-      this.setState({selectedRegion: propertyPath});
+      this.setState({selectedDomain: propertyPath});
     }
   },
 
   //called after updates are flushed to the DOM, such as switching tabs
   componentDidUpdate: function() {
     //codemirror does not fully initialize when not visible, so make sure it's initialized now
-    if (this.state.selectedRegion) {
-      this.state.mdeInstances[this.state.selectedRegion].codemirror.refresh();
+    if (this.state.selectedDomain) {
+      this.state.mdeInstances[this.state.selectedDomain].codemirror.refresh();
     }
   },
 
   render: function() {
     var data = this.props.valueLink.value || {};
-    var regionsThatHaveBeenAdded = _.filter(availableRegions, (region) => data[region.propertyPath]);
-    var regionsThatCanBeAdded = _.filter(availableRegions, (region) => !data[region.propertyPath]);
-    var hasManyTabs = regionsThatHaveBeenAdded.length > 4;
+    var domainsThatHaveBeenAdded = _.filter(availableDomains, (domain) => data[domain.propertyPath]);
+    var domainsThatCanBeAdded = _.filter(availableDomains, (domain) => !data[domain.propertyPath]);
+    var hasManyTabs = domainsThatHaveBeenAdded.length > 4;
 
     return (
       <div className="markdown-editor">
         {this.props.title ? <h3 className="title">{this.props.title}</h3> : null}
 
-        <div className="region-header">
+        <div className="domain-header">
           <div className="tabs">
-            {regionsThatCanBeAdded.length == 0 ? null :
-              <select className="region-select" value="_" onChange={this.handleTabAdd}>
-                <option value="_">Add a region</option>
-                {regionsThatCanBeAdded.map((region) => (
-                  <option value={region.propertyPath}>{region.message}</option>
+            {domainsThatCanBeAdded.length == 0 ? null :
+              <select className="domain-select" value="_" onChange={this.handleTabAdd}>
+                <option value="_">Add a domain</option>
+                {domainsThatCanBeAdded.map((domain) => (
+                  <option value={domain.propertyPath}>{domain.message}</option>
                 ))}
               </select>
             }
 
-            {regionsThatHaveBeenAdded.map((region) => {
-              var isActiveTab = this.state.selectedRegion == region.propertyPath;
-              var onClickTab = () => {this.handleTabClick(region.propertyPath)};
+            {domainsThatHaveBeenAdded.map((domain) => {
+              var isActiveTab = this.state.selectedDomain == domain.propertyPath;
+              var onClickTab = () => {this.handleTabClick(domain.propertyPath)};
               var onRemoveTab = (e) => {
                 e.preventDefault();
-                this.handleTabRemove(region.propertyPath);
+                this.handleTabRemove(domain.propertyPath);
               };
               return (
                 <div className={"tab " + (hasManyTabs ? "narrow " : "") + (isActiveTab ? "active" : "inactive")}>
-                  <label className="region-name" onClick={onClickTab}>{region.message}</label>
+                  <label className="domain-name" onClick={onClickTab}>{domain.message}</label>
                   <a className="remove-button" onClick={onRemoveTab}><i className="fa fa-times"></i></a>
                 </div>
               );
@@ -138,21 +126,11 @@ module.exports = React.createClass({
           </div>
         </div>
 
-        {availableRegions.map((region) => {
-          //create editors for all regions anyway; simpler to set up on `componentDidMount`
-          var isActiveEditor = this.state.selectedRegion == region.propertyPath;
-          var regionValue = data[region.propertyPath];
-          return (
-            <div className={"editor " + (isActiveEditor ? "active" : "inactive")}>
-              <div className="simplemde-wrapper">
-                <textarea
-                  ref={"textarea-" + region.propertyPath}
-                  id={this.props.id + "-textarea-" + region.propertyPath}
-                  defaultValue={regionValue ? regionValue.markdown : ""}>
-                </textarea>
-              </div>
-            </div>
-          );
+        {availableDomains.map((domain) => {
+          //create editors for all domains anyway; simpler to set up on `componentDidMount`
+          var isActiveEditor = this.state.selectedDomain == domain.propertyPath;
+          var domainValue = data[domain.propertyPath];
+
         })}
 
       </div>

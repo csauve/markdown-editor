@@ -1,6 +1,6 @@
 var React = require("react");
 var ReactDOM = require("react-dom");
-var MarkdownEditor = require("./components/MarkdownEditor.jsx");
+var RegionalRichTextEditor = require("./components/RegionalRichTextEditor.jsx");
 
 
 var App = React.createClass({
@@ -12,7 +12,7 @@ var App = React.createClass({
         //todo: use schema instead of `availableRegions`
       },
       data: {
-        enUS: {
+        com: {
           markdown: "Hello, **USA**!"
         },
         de: {
@@ -33,7 +33,7 @@ var App = React.createClass({
     return (
       <main>
         <h1>Markdown Editor</h1>
-        <MarkdownEditor
+        <RegionalRichTextEditor
           title="Terms of Sale"
           id="example"
           valueLink={dataLink}

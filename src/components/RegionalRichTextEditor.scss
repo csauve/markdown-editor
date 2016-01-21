@@ -1,0 +1,62 @@
+$borders: #ccc;
+$fg-colour: #333;
+$fg-faded: lighten($fg-colour, 30%);
+$fg-faded-more: lighten($fg-colour, 50%);
+$tab-faded: #f7f7f7;
+$missing-color: #F3CD89;
+
+.regional-richtext-editor {
+  position: relative;
+
+  .domain-header {
+    color: $fg-colour;
+
+    .tabs {
+      position: relative;
+
+      .tab {
+        display: inline-block;
+        margin-left: 2px;
+        border-radius: 4px 4px 0 0;
+        border: 1px solid $borders;
+        border-bottom: none;
+        border-top: 3px solid $borders;
+        font-size: 10pt;
+
+        .domain-name {
+          display: inline-block;
+          padding: 8px;
+        }
+
+        &.active {
+          border-top-color: $fg-faded;
+          font-weight: bold;
+          padding-top: 5px; //make the tab taller when active
+        }
+
+        &.active.missing, &.inactive.missing {
+          border-top-color: $missing-color;
+        }
+
+        &.inactive {
+          color: $fg-faded;
+          background: $tab-faded;
+
+          .domain-name {
+            cursor: pointer;
+          }
+
+          &:hover {
+            color: $fg-colour;
+          }
+        }
+      }
+    }
+  }
+
+  .domain-editor {
+    &.inactive {
+      display: none;
+    }
+  }
+}

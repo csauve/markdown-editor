@@ -1,5 +1,6 @@
 var React = require("react");
 var SimpleMDE = require("simplemde");
+var _ = require("underscore");
 
 var mdeConfig = {
   autofocus: false,
@@ -16,9 +17,7 @@ module.exports = React.createClass({
   componentDidMount: function() {
     var textAreaElement = this.refs["mde-textarea"];
     var simplemde = new SimpleMDE(_.defaults({element: textAreaElement}, mdeConfig));
-
-    var changeHandler = () => {this.handleEditorContentChanged(simplemde.value())};
-    simplemde.codemirror.on("change", createHandler(domain.propertyPath, simplemde));
+    simplemde.codemirror.on("change", () => {this.handleEditorContentChanged(simplemde.value())});
 
     /* Codemirror does not fully initialize when not visible (e.g. in a `display: none` container).
      * This component does not know if it's visible or not, but some parent component will.

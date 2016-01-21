@@ -13,6 +13,10 @@ var mdeConfig = {
  * https://github.com/NextStepWebs/simplemde-markdown-editor
  */
 module.exports = React.createClass({
+  getInitialState: function() {
+    return {value: this.props.valueLink.value};
+  },
+
   // Called after the initially rendered markup is put into the DOM. Time to initialize SimpleMDE
   componentDidMount: function() {
     var textAreaElement = this.refs["mde-textarea"];
@@ -26,10 +30,24 @@ module.exports = React.createClass({
       simplemde.codemirror.refresh();
     };
     this.props.onMount(notifyVisible);
+
+    //only propagate changes up when the field loses focus
+    simplemde.codemirror.on("blur", (event) => {
+      this.props.valueLink.requestChange(this.state.value);
+    });
+  },
+
+  componentWillReceiveProps: function(nextProps) {
+    //only change state if the prop actually changed -- otherwise we could nuke someone's in-progress field editing!
+    if (this.props.valueLink.value != nextProps.valueLink.value) {
+      this.setState({value: nextProps.valueLink.value});
+    }
   },
 
   handleEditorContentChanged: function(newMarkdown) {
-    this.props.valueLink.requestChange(newMarkdown ? {markdown : newMarkdown} : null);
+    this.setState({
+      value: newMarkdown ? {markdown : newMarkdown} : null
+    });
   },
 
   render: function() {
